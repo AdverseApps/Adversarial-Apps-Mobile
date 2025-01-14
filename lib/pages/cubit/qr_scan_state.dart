@@ -1,32 +1,16 @@
 class QrScanState {
   final String scannedText;
-  final bool isScanning;
-  final String? errorMessage;
 
-  const QrScanState({
-    required this.scannedText,
-    required this.isScanning,
-    this.errorMessage,
-  });
+  const QrScanState({required this.scannedText});
 
-  /// Initial/default state
+  /// Initial or default state
   factory QrScanState.initial() {
-    return const QrScanState(
-      scannedText: '',
-      isScanning: false,
-      errorMessage: null,
-    );
+    return const QrScanState(scannedText: '');
   }
 
-  QrScanState copyWith({
-    String? scannedText,
-    bool? isScanning,
-    String? errorMessage,
-  }) {
+  QrScanState copyWith({String? scannedText}) {
     return QrScanState(
       scannedText: scannedText ?? this.scannedText,
-      isScanning: isScanning ?? this.isScanning,
-      errorMessage: errorMessage,
     );
   }
 }

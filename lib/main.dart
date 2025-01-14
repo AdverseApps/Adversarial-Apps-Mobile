@@ -15,13 +15,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // Provide the QrScanCubit so that QrScanPage can access it
+        // Provide the QrScanCubit so QrScanPage can access it
         BlocProvider(
           create: (context) => QrScanCubit(),
         ),
       ],
       child: MaterialApp(
-        title: 'Adversarial Apps',
+        title: 'Adversarial Apps QR Demo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
