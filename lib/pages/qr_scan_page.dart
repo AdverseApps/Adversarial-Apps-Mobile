@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'cubit/qr_scan_cubit.dart';
 import 'cubit/qr_scan_state.dart';
+import 'qr_generate_page.dart';
 
 class QrScanPage extends StatelessWidget {
   const QrScanPage({super.key});
@@ -20,22 +21,70 @@ class QrScanPage extends StatelessWidget {
           ),
           body: Column(
             children: [
-              // Camera preview with a real-time scanner
+              // --- Top row with two "boxes" ---
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // Do nothing or re-navigate to this page
+                        // if you want to refresh or something:
+                        // Navigator.pushReplacement(...)
+                      },
+                      child: Container(
+                        height: 60,
+                        color: Colors.blueAccent,
+                        child: const Center(
+                          child: Text(
+                            'Scan QR Code',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigate to the "Show QR Code" page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const QrGeneratePage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 60,
+                        color: Colors.green,
+                        child: const Center(
+                          child: Text(
+                            'Show QR Code',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // --- Camera preview with real-time scanner ---
               Expanded(
                 flex: 3,
                 child: MobileScanner(
                   onDetect: (barcodeCapture) {
                     final barcodes = barcodeCapture.barcodes;
 
-                    // If you only care about the first barcode scanned:
                     if (barcodes.isNotEmpty) {
-                      context.read<QrScanCubit>().onDetect(barcodes.first);
+                      // Pass the first detected barcode to the cubit
+                      cubit.onDetect(barcodes.first);
                     }
                   },
                 ),
               ),
 
-              // Display the scanned text in a read-only TextField
+              // --- Display the scanned text in a read-only TextField ---
               Expanded(
                 flex: 1,
                 child: Container(
@@ -59,7 +108,7 @@ class QrScanPage extends StatelessWidget {
                           cubit.clearScannedText();
                         },
                         child: const Text('Clear'),
-                      )
+                      ),
                     ],
                   ),
                 ),
