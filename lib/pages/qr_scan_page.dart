@@ -4,10 +4,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'cubit/qr_scan_cubit.dart';
 import 'cubit/qr_scan_state.dart';
-import 'qr_generate_page.dart';
+import '../components/shared_app_bar.dart';
 
 class QrScanPage extends StatelessWidget {
-  const QrScanPage({super.key});
+  const QrScanPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +16,16 @@ class QrScanPage extends StatelessWidget {
         final cubit = context.read<QrScanCubit>();
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Adversarial Apps QR Scanner'),
-          ),
+          appBar: const SharedAppBar(title: 'QR Scanner'),
           body: Column(
             children: [
-              // --- Top row with two "boxes" ---
+              // Existing row for “Scan QR Code” or “Show QR Code”
               Row(
                 children: [
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        // Do nothing or re-navigate to this page
-                        // if you want to refresh or something:
-                        // Navigator.pushReplacement(...)
+                        // Possibly refresh current page
                       },
                       child: Container(
                         height: 60,
@@ -47,12 +43,7 @@ class QrScanPage extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () {
                         // Navigate to the "Show QR Code" page
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const QrGeneratePage(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/qrGenerate');
                       },
                       child: Container(
                         height: 60,
@@ -69,7 +60,7 @@ class QrScanPage extends StatelessWidget {
                 ],
               ),
 
-              // --- Camera preview with real-time scanner ---
+              // Camera preview with mobile_scanner
               Expanded(
                 flex: 3,
                 child: MobileScanner(
@@ -77,14 +68,13 @@ class QrScanPage extends StatelessWidget {
                     final barcodes = barcodeCapture.barcodes;
 
                     if (barcodes.isNotEmpty) {
-                      // Pass the first detected barcode to the cubit
                       cubit.onDetect(barcodes.first);
                     }
                   },
                 ),
               ),
 
-              // --- Display the scanned text in a read-only TextField ---
+              // Show scanned text, Clear button, etc.
               Expanded(
                 flex: 1,
                 child: Container(

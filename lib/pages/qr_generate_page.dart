@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import 'cubit/qr_generate_cubit.dart';
 import 'cubit/qr_generate_state.dart';
+import '../components/shared_app_bar.dart';
 
 class QrGeneratePage extends StatelessWidget {
   const QrGeneratePage({super.key});
@@ -15,9 +16,7 @@ class QrGeneratePage extends StatelessWidget {
         final cubit = context.read<QrGenerateCubit>();
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Generate a QR Code'),
-          ),
+          appBar: const SharedAppBar(title: 'Generate a QR Code'),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
