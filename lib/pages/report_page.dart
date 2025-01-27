@@ -35,7 +35,7 @@ class ReportPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Company Details', style: TextStyle(fontSize: 30)),
-                  Text('Name: $companyName]}',
+                  Text('Name: $companyName',
                       style: const TextStyle(fontSize: 16)),
                   Text('Business Address: ${details['address']}',
                       style: const TextStyle(fontSize: 16)),

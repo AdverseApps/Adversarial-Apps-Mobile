@@ -1,22 +1,13 @@
 import 'package:adversarialapps/services/cik_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../components/shared_app_bar.dart';
 import 'cubit/search_cubit.dart';
 import 'cubit/report_cubit.dart';
 import 'report_page.dart';
 
 class SearchPage extends StatefulWidget {
-class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
-
-  @override
-  State<SearchPage> createState() => _SearchPageState();
-}
-
-class _SearchPageState extends State<SearchPage> {
-  final _searchController = TextEditingController();
 
   @override
   State<SearchPage> createState() => _SearchPageState();
