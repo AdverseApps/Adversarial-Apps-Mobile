@@ -1,3 +1,4 @@
+import 'package:adversarialapps/services/cik_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'pages/dashboard_page.dart';
@@ -6,8 +7,10 @@ import 'pages/qr_scan_page.dart';
 import 'pages/qr_generate_page.dart';
 import 'pages/cubit/qr_scan_cubit.dart';
 import 'pages/cubit/qr_generate_cubit.dart';
+import 'pages/cubit/search_cubit.dart';
 
 void main() {
+  final cikService = CikService(); // or some RemoteCikService
   runApp(
     MultiBlocProvider(
       providers: [
@@ -19,7 +22,9 @@ void main() {
         BlocProvider<QrGenerateCubit>(
           create: (_) => QrGenerateCubit(),
         ),
-        // ... add other cubits here if needed
+        BlocProvider<SearchCubit>(
+          create: (_) => SearchCubit(cikService),
+        ),
       ],
       child: const MyApp(),
     ),
