@@ -67,7 +67,7 @@ class ReportPage extends StatelessWidget {
                       padding: const EdgeInsets.all(
                           16), // Padding around the QR code
                       child: QrImageView(
-                        data: companyName,
+                        data: cik,
                         version: QrVersions.auto,
                         size: 200.0,
                       ),
