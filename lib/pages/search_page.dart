@@ -23,7 +23,6 @@ class _SearchPageState extends State<SearchPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // SEARCH INPUT
             TextField(
               controller: _searchController,
               decoration: const InputDecoration(
@@ -32,13 +31,11 @@ class _SearchPageState extends State<SearchPage> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
-                // Call cubit search on each change (or implement a debounce if you prefer)
+                // Call cubit search on each change
                 searchCubit.search(value);
               },
             ),
             const SizedBox(height: 16),
-
-            // RESULTS
             Expanded(
               child: BlocBuilder<SearchCubit, SearchState>(
                 builder: (context, state) {
@@ -62,7 +59,7 @@ class _SearchPageState extends State<SearchPage> {
                           title: Text(company.name),
                           subtitle: Text('CIK: ${company.cik}'),
                           onTap: () {
-                            // For example, show a SnackBar or navigate
+                            // SnackBar that you interacted
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

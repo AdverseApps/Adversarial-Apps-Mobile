@@ -2,14 +2,12 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:adversarialapps/services/cik_service.dart';
 
-// Basic model
 class Company {
   final String name;
   final String cik;
   Company({required this.name, required this.cik});
 }
 
-// State
 class SearchState extends Equatable {
   final bool isLoading;
   final List<Company> results;
@@ -37,7 +35,6 @@ class SearchState extends Equatable {
   List<Object?> get props => [isLoading, results, error];
 }
 
-// Cubit
 class SearchCubit extends Cubit<SearchState> {
   final CikService _cikService;
 
@@ -45,18 +42,15 @@ class SearchCubit extends Cubit<SearchState> {
 
   Future<void> search(String query) async {
     if (query.isEmpty) {
-      // If user cleared the box, reset
       emit(state.copyWith(isLoading: false, results: [], error: null));
       return;
     }
 
-    // Indicate loading
     emit(state.copyWith(isLoading: true, error: null));
 
     try {
       final rawResults = await _cikService.obtainCikNumber(query);
 
-      // Convert to our model
       final companies = rawResults.map((item) {
         return Company(
           name: item['name'] ?? '',

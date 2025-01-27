@@ -14,11 +14,9 @@ void main() {
   runApp(
     MultiBlocProvider(
       providers: [
-        // Provide QrScanCubit for scanning
         BlocProvider<QrScanCubit>(
           create: (_) => QrScanCubit(),
         ),
-        // Provide QrGenerateCubit for generating
         BlocProvider<QrGenerateCubit>(
           create: (_) => QrGenerateCubit(),
         ),
