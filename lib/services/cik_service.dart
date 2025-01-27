@@ -12,14 +12,8 @@ class CikService {
       "search_term": searchTerm,
     });
 
-    // Define headers
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
     // Make the POST request
-    final response = await http.post(url, headers: headers, body: body);
+    final response = await http.post(url, body: body);
 
     // Parse the response
     if (response.statusCode == 200) {
