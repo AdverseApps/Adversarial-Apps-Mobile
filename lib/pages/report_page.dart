@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'cubit/report_cubit.dart';
 
 class ReportPage extends StatelessWidget {
@@ -26,13 +27,15 @@ class ReportPage extends StatelessWidget {
             );
           } else if (state.companyDetails != null) {
             final details = state.companyDetails!;
+            final companyName = details['name'] ?? 'N/A';
+
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Company Details', style: TextStyle(fontSize: 30)),
-                  Text('Name: ${details['name']}',
+                  Text('Name: $companyName]}',
                       style: const TextStyle(fontSize: 16)),
                   Text('Business Address: ${details['address']}',
                       style: const TextStyle(fontSize: 16)),
@@ -49,6 +52,27 @@ class ReportPage extends StatelessWidget {
                       style: const TextStyle(fontSize: 16)),
                   Text('Website: ${details['website']}',
                       style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 24),
+                  const Text('Company QR Code:',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200], // Light gray background
+                        borderRadius: BorderRadius.circular(
+                            12), // Rounded corners for aesthetics
+                      ),
+                      padding: const EdgeInsets.all(
+                          16), // Padding around the QR code
+                      child: QrImageView(
+                        data: companyName,
+                        version: QrVersions.auto,
+                        size: 200.0,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
