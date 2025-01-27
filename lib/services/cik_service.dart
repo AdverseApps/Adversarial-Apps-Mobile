@@ -37,4 +37,28 @@ class CikService {
           'Failed to fetch data: ${response.statusCode} ${response.body}');
     }
   }
+
+  Future<Map<String, dynamic>> getCompanyDetails(String cik) async {
+    final url = Uri.parse('https://adversarialapps.com/api/call-python-api');
+
+    final body = jsonEncode({
+      "action": "get_sec_data",
+      "search_term": cik,
+    });
+
+    final response = await http.post(url, body: body);
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+
+      if (responseData['status'] == 'success') {
+        return responseData['company'];
+      } else {
+        throw Exception('Invalid response structure: ${response.body}');
+      }
+    } else {
+      throw Exception(
+          'Failed to fetch data: ${response.statusCode} ${response.body}');
+    }
+  }
 }

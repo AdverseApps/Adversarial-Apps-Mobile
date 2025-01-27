@@ -1,7 +1,10 @@
+import 'package:adversarialapps/services/cik_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../components/shared_app_bar.dart';
 import 'cubit/search_cubit.dart';
+import 'cubit/report_cubit.dart';
+import 'report_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -59,11 +62,13 @@ class _SearchPageState extends State<SearchPage> {
                           title: Text(company.name),
                           subtitle: Text('CIK: ${company.cik}'),
                           onTap: () {
-                            // SnackBar that you interacted
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Selected ${company.name} (CIK: ${company.cik})',
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider(
+                                  create: (_) => ReportCubit(CikService())
+                                    ..fetchCompanyDetails(company.cik),
+                                  child: ReportPage(cik: company.cik),
                                 ),
                               ),
                             );

@@ -1,9 +1,9 @@
+import 'package:adversarialapps/pages/cubit/qr_scan_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'cubit/qr_scan_cubit.dart';
-import 'cubit/qr_scan_state.dart';
 import '../components/shared_app_bar.dart';
 
 class QrScanPage extends StatelessWidget {
@@ -68,39 +68,9 @@ class QrScanPage extends StatelessWidget {
                     final barcodes = barcodeCapture.barcodes;
 
                     if (barcodes.isNotEmpty) {
-                      cubit.onDetect(barcodes.first);
+                      cubit.onDetect(barcodes.first, context);
                     }
                   },
-                ),
-              ),
-
-              // Show scanned text, Clear button, etc.
-              Expanded(
-                flex: 1,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextField(
-                        readOnly: true,
-                        controller:
-                            TextEditingController(text: state.scannedText),
-                        decoration: const InputDecoration(
-                          labelText: 'Scanned QR Code Text',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          cubit.clearScannedText();
-                        },
-                        child: const Text('Clear'),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
