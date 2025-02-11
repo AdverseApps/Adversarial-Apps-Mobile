@@ -25,7 +25,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // API endpoints (update these as necessary)
   final String loginUrl = 'https://adversarialapps.com/api/create-user-session';
-  // This endpoint should verify the token. It corresponds to your Next.js GET endpoint
+  // This endpoint should verify the token. It corresponds to your Next.js GET endpoints
   final String verifyUrl = 'https://adversarialapps.com/api/verify-token';
 
   @override
