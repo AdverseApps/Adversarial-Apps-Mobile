@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
+import '../components/shared_app_bar.dart';
+import 'signup_page.dart'; // Navigation to the sign-up page
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -11,21 +13,20 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Instance to securely store the auth token
+  // Secure storage instance for storing the JWT
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  // Controllers for the login form
+  // Controllers for login form fields
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // UI state variables
   bool isLoggedIn = false;
   bool isLoading = false;
   String loggedInUser = "";
 
-  // API endpoints (update these as necessary)
+  // API endpoints (adjust these as needed)
   final String loginUrl = 'https://adversarialapps.com/api/create-user-session';
-  // This endpoint should verify the token. It corresponds to your Next.js GET endpoints
+  // This endpoint should verify the token (using your Next.js GET endpoint)
   final String verifyUrl = 'https://adversarialapps.com/api/verify-token';
 
   @override
@@ -34,7 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _checkLoginStatus();
   }
 
-  /// Checks if a token is already stored and then verifies it with the API.
+  /// Checks if a token is stored and verifies it with the API.
   Future<void> _checkLoginStatus() async {
     setState(() {
       isLoading = true;
@@ -42,12 +43,11 @@ class _DashboardPageState extends State<DashboardPage> {
     String? token = await _storage.read(key: 'auth_token');
     if (token != null) {
       try {
-        // Send a GET request including the token in the Cookie header.
         final response = await http.get(
           Uri.parse(verifyUrl),
           headers: {
             'Content-Type': 'application/json',
-            'Cookie': 'auth_token=$token'
+            'Cookie': 'auth_token=$token',
           },
         );
         if (response.statusCode == 200) {
@@ -58,17 +58,14 @@ class _DashboardPageState extends State<DashboardPage> {
               loggedInUser = responseData['user'];
             });
           } else {
-            // Token is invalid—remove it
             await _storage.delete(key: 'auth_token');
             setState(() => isLoggedIn = false);
           }
         } else {
-          // Response not OK—assume token is no longer valid
           await _storage.delete(key: 'auth_token');
           setState(() => isLoggedIn = false);
         }
       } catch (e) {
-        // On error, remove token and show login form
         await _storage.delete(key: 'auth_token');
         setState(() => isLoggedIn = false);
       }
@@ -78,9 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  /// Extracts the auth token from the Set-Cookie header.
-  /// Expected header format:
-  ///   "auth_token=eyJ...; HttpOnly; Path=/; Max-Age=43200; Secure; SameSite=Strict"
+  /// Helper to extract the auth token from the Set-Cookie header.
   String? _parseAuthToken(String? setCookieHeader) {
     if (setCookieHeader == null) return null;
     final parts = setCookieHeader.split(';');
@@ -93,7 +88,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return null;
   }
 
-  /// Attempts to log in the user by calling the login API.
+  /// Attempts to log in the user.
   Future<void> _attemptLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
@@ -118,11 +113,9 @@ class _DashboardPageState extends State<DashboardPage> {
       );
 
       if (response.statusCode == 200) {
-        // Look for the Set-Cookie header containing the JWT
         final setCookie = response.headers['set-cookie'];
         final authToken = _parseAuthToken(setCookie);
         if (authToken != null) {
-          // Store the token securely
           await _storage.write(key: 'auth_token', value: authToken);
           setState(() {
             isLoggedIn = true;
@@ -134,7 +127,6 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
       } else {
-        // Login failed—display the error message from the API
         final responseData = jsonDecode(response.body);
         final errorMessage = responseData['error'] ?? 'Login failed';
         ScaffoldMessenger.of(context).showSnackBar(
@@ -154,12 +146,21 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Logs out the user by clearing the stored token.
   Future<void> _logout() async {
-    // Optionally, you can also call your API logout endpoint here.
     await _storage.delete(key: 'auth_token');
     setState(() {
       isLoggedIn = false;
       loggedInUser = "";
     });
+  }
+
+  /// Returns an appropriate AppBar.
+  PreferredSizeWidget _buildAppBar() {
+    // When logged in, we use your SharedAppBar (which includes navigation links)
+    if (isLoggedIn) {
+      return const SharedAppBar(title: 'Dashboard');
+    }
+    // Otherwise, use a simpler AppBar
+    return AppBar(title: const Text('Login'));
   }
 
   @override
@@ -171,18 +172,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: isLoggedIn
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: _logout,
-                  tooltip: 'Log out',
-                )
-              ]
-            : null,
-      ),
+      appBar: _buildAppBar(),
       body: Center(
         child: isLoggedIn
             ? Column(
@@ -192,7 +182,14 @@ class _DashboardPageState extends State<DashboardPage> {
                     'Welcome, $loggedInUser',
                     style: const TextStyle(fontSize: 20),
                   ),
-                  // Insert additional dashboard content here
+                  const SizedBox(height: 16),
+                  // Dashboard content goes here
+                  const Text('This is your dashboard content.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _logout,
+                    child: const Text('Log Out'),
+                  ),
                 ],
               )
             : Padding(
@@ -221,6 +218,18 @@ class _DashboardPageState extends State<DashboardPage> {
                       ElevatedButton(
                         onPressed: _attemptLogin,
                         child: const Text('Log In'),
+                      ),
+                      const SizedBox(height: 16),
+                      // Navigation link to the Sign-Up page
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SignUpPage()),
+                          );
+                        },
+                        child: const Text("Don't have an account? Sign Up"),
                       ),
                     ],
                   ),
