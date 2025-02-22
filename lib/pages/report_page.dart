@@ -6,7 +6,7 @@ import 'cubit/report_cubit.dart';
 class ReportPage extends StatelessWidget {
   final String cik;
 
-  const ReportPage({Key? key, required this.cik}) : super(key: key);
+  const ReportPage({super.key, required this.cik});
 
   @override
   Widget build(BuildContext context) {

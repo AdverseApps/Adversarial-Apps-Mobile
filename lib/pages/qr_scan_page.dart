@@ -7,7 +7,7 @@ import 'cubit/qr_scan_cubit.dart';
 import '../components/shared_app_bar.dart';
 
 class QrScanPage extends StatelessWidget {
-  const QrScanPage({Key? key}) : super(key: key);
+  const QrScanPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,24 +33,6 @@ class QrScanPage extends StatelessWidget {
                         child: const Center(
                           child: Text(
                             'Scan QR Code',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // Navigate to the "Show QR Code" page
-                        Navigator.pushNamed(context, '/qrGenerate');
-                      },
-                      child: Container(
-                        height: 60,
-                        color: Colors.green,
-                        child: const Center(
-                          child: Text(
-                            'Show QR Code',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
