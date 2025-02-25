@@ -3,7 +3,6 @@ class QrScanState {
 
   const QrScanState({required this.scannedText});
 
-  /// Initial or default state
   factory QrScanState.initial() {
     return const QrScanState(scannedText: '');
   }

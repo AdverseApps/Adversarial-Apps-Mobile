@@ -24,9 +24,9 @@ class _DashboardPageState extends State<DashboardPage> {
   bool isLoading = false;
   String loggedInUser = "";
 
-  // API endpoints (adjust these as needed)
+  // This endpoint is for the login (hit off of Heroku Server)
   final String loginUrl = 'https://adversarialapps.com/api/create-user-session';
-  // This endpoint should verify the token (using your Next.js GET endpoint)
+  // This endpoint should verify the token
   final String verifyUrl = 'https://adversarialapps.com/api/verify-token';
 
   @override
@@ -155,11 +155,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Returns an appropriate AppBar.
   PreferredSizeWidget _buildAppBar() {
-    // When logged in, we use your SharedAppBar (which includes navigation links)
     if (isLoggedIn) {
       return const SharedAppBar(title: 'Dashboard');
     }
-    // Otherwise, use a simpler AppBar
     return AppBar(title: const Text('Login'));
   }
 

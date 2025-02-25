@@ -155,7 +155,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    // You can choose to use your SharedAppBar here as well if desired.
     return Scaffold(
       appBar: AppBar(title: const Text('Sign Up')),
       body: isLoading

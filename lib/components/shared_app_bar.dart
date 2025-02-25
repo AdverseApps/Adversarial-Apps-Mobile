@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// This is the component for the Nav Bar at the top of the app at all times.
 class SharedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
 
@@ -40,7 +41,7 @@ class SharedAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // This sets the size of the AppBar. Typically kToolbarHeight is used.
+  // This sets the size of the AppBar.
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

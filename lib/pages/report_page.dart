@@ -61,11 +61,9 @@ class ReportPage extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200], // Light gray background
-                        borderRadius: BorderRadius.circular(
-                            12), // Rounded corners for aesthetics
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      padding: const EdgeInsets.all(
-                          16), // Padding around the QR code
+                      padding: const EdgeInsets.all(16),
                       child: QrImageView(
                         data: cik,
                         version: QrVersions.auto,

@@ -6,6 +6,7 @@ import 'cubit/qr_generate_cubit.dart';
 import 'cubit/qr_generate_state.dart';
 import '../components/shared_app_bar.dart';
 
+/// CURRENTLY UNUSED. PAGE IS USED TO GENERATE A QR CODE BASED ON INPUT
 class QrGeneratePage extends StatelessWidget {
   const QrGeneratePage({super.key});
 

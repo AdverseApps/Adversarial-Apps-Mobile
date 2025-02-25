@@ -19,7 +19,7 @@ class QrScanPage extends StatelessWidget {
           appBar: const SharedAppBar(title: 'QR Scanner'),
           body: Column(
             children: [
-              // Existing row for “Scan QR Code” or “Show QR Code”
+              // Existing row for “Scan QR Code”
               Row(
                 children: [
                   Expanded(
@@ -60,7 +60,7 @@ class QrScanPage extends StatelessWidget {
                 ],
               ),
 
-              // Camera preview with mobile_scanner
+              // Camera preview
               Expanded(
                 flex: 3,
                 child: MobileScanner(
