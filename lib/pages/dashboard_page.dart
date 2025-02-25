@@ -6,7 +6,7 @@ import '../components/shared_app_bar.dart';
 import 'signup_page.dart'; // Navigation to the sign-up page
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();

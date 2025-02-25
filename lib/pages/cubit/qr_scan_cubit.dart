@@ -15,15 +15,22 @@ class QrScanCubit extends Cubit<QrScanState> {
   void onDetect(Barcode barcode, BuildContext context) {
     final String code = barcode.rawValue ?? '';
     if (code.isNotEmpty) {
-      emit(state.copyWith(scannedText: code));
+      // The QR code now returns a URL like:
+      // "https://adversarialapps.com/company/<cik>"
+      const prefix = "https://adversarialapps.com/company/";
+      String cik = code;
+      if (code.startsWith(prefix)) {
+        cik = code.substring(prefix.length);
+      }
+      emit(state.copyWith(scannedText: cik));
 
-      // Navigate to the ReportPage with the scanned CIK number
+      // Navigate to the ReportPage using the extracted CIK
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => BlocProvider(
-            create: (_) => ReportCubit(CikService())..fetchCompanyDetails(code),
-            child: ReportPage(cik: code),
+            create: (_) => ReportCubit(CikService())..fetchCompanyDetails(cik),
+            child: ReportPage(cik: cik),
           ),
         ),
       );
