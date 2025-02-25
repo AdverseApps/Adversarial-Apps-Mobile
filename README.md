@@ -32,7 +32,8 @@ To determine issues with your flutter setup, run the following:
 ```
 flutter doctor
 ```
-Most likely, your Visual Studio (not VSC) is not configured correctly. Most commonly this is due to a missing package. Simply install the package the doctor perscribes.
+Most likely, your Visual Studio (not VSC) is not configured correctly. Most commonly this is due to a missing package. Simply install the package the doctor prescribed.
+
 Typically for every additional dependency it should auto run, but if not, you can run the following command to compile all dependencies:
 ```
 flutter pub get
