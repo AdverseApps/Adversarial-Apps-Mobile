@@ -1,6 +1,7 @@
 import 'package:adversarialapps/services/cik_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart'; // Add provider package
 import 'pages/dashboard_page.dart';
 import 'pages/search_page.dart';
 import 'pages/qr_scan_page.dart';
@@ -8,23 +9,31 @@ import 'pages/qr_generate_page.dart';
 import 'pages/cubit/qr_scan_cubit.dart';
 import 'pages/cubit/qr_generate_cubit.dart';
 import 'pages/cubit/search_cubit.dart';
+import 'components/auth_provider.dart'; // Import the auth provider
 
 void main() {
   final cikService = CikService(); // or some RemoteCikService
   runApp(
-    MultiBlocProvider(
+    MultiProvider(
       providers: [
-        BlocProvider<QrScanCubit>(
-          create: (_) => QrScanCubit(),
-        ),
-        BlocProvider<QrGenerateCubit>(
-          create: (_) => QrGenerateCubit(),
-        ),
-        BlocProvider<SearchCubit>(
-          create: (_) => SearchCubit(cikService),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(),
         ),
       ],
-      child: const MyApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<QrScanCubit>(
+            create: (_) => QrScanCubit(),
+          ),
+          BlocProvider<QrGenerateCubit>(
+            create: (_) => QrGenerateCubit(),
+          ),
+          BlocProvider<SearchCubit>(
+            create: (_) => SearchCubit(cikService),
+          ),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }

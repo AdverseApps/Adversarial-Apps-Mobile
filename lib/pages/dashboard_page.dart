@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:adversarialapps/components/auth_provider.dart';
 import 'package:adversarialapps/pages/cubit/dashboard_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import '../components/shared_app_bar.dart';
 import 'signup_page.dart';
 
@@ -146,6 +148,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Logs out by clearing the stored token.
   Future<void> _logout() async {
+    Provider.of<AuthProvider>(context, listen: false).setLoggedIn(false);
     await _storage.delete(key: 'auth_token');
     setState(() {
       isLoggedIn = false;
@@ -158,6 +161,7 @@ class _DashboardPageState extends State<DashboardPage> {
   PreferredSizeWidget _buildAppBar() {
     // When logged in, use your existing SharedAppBar (with navigation links)
     if (isLoggedIn) {
+      Provider.of<AuthProvider>(context, listen: false).setLoggedIn(true);
       return const SharedAppBar(title: 'Dashboard');
     }
     return AppBar(title: const Text('Login'));

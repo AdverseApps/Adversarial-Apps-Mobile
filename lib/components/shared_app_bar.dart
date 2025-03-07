@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'auth_provider.dart';
 
-/// This is the component for the Nav Bar at the top of the app at all times.
 class SharedAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
 
   const SharedAppBar({
-    super.key,
+    Key? key,
     required this.title,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Read auth status from the provider.
+    final isLoggedIn = Provider.of<AuthProvider>(context).isLoggedIn;
     return AppBar(
-      // Use the title passed in from constructor
       title: Text(title),
-      // Common navigation icons used throughout the app
       actions: [
         IconButton(
           icon: const Icon(Icons.home),
           tooltip: 'Go to Dashboard',
           onPressed: () {
-            Navigator.pushNamed(context, '/dashboard');
+            if (isLoggedIn) {
+              Navigator.pushNamed(context, '/dashboard');
+            } else {
+              Navigator.pushNamed(context, '/login');
+            }
           },
         ),
         IconButton(
@@ -41,7 +46,6 @@ class SharedAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // This sets the size of the AppBar.
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
