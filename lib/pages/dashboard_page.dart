@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:adversarialapps/pages/cubit/dashboard_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 import '../components/shared_app_bar.dart';
-import 'signup_page.dart'; // Navigation to the sign-up page
+import 'signup_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -13,20 +15,20 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Secure storage instance for storing the JWT
+  // Secure storage to hold the JWT
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  // Controllers for login form fields
+  // Login form controllers (shown when not logged in)
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool isLoggedIn = false;
   bool isLoading = false;
   String loggedInUser = "";
+  String? _authToken;
 
-  // This endpoint is for the login (hit off of Heroku Server)
+  // API endpoints (adjust if needed)
   final String loginUrl = 'https://adversarialapps.com/api/create-user-session';
-  // This endpoint should verify the token
   final String verifyUrl = 'https://adversarialapps.com/api/verify-token';
 
   @override
@@ -35,7 +37,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _checkLoginStatus();
   }
 
-  /// Checks if a token is stored and verifies it with the API.
+  /// Verifies whether a token exists and is valid.
   Future<void> _checkLoginStatus() async {
     setState(() {
       isLoading = true;
@@ -56,6 +58,7 @@ class _DashboardPageState extends State<DashboardPage> {
             setState(() {
               isLoggedIn = true;
               loggedInUser = responseData['user'];
+              _authToken = token;
             });
           } else {
             await _storage.delete(key: 'auth_token');
@@ -75,7 +78,7 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  /// Helper to extract the auth token from the Set-Cookie header.
+  /// Extracts the auth token from a Set-Cookie header.
   String? _parseAuthToken(String? setCookieHeader) {
     if (setCookieHeader == null) return null;
     final parts = setCookieHeader.split(';');
@@ -92,7 +95,6 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _attemptLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
-
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -100,18 +102,15 @@ class _DashboardPageState extends State<DashboardPage> {
       );
       return;
     }
-
     setState(() {
       isLoading = true;
     });
-
     try {
       final response = await http.post(
         Uri.parse(loginUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}),
       );
-
       if (response.statusCode == 200) {
         final setCookie = response.headers['set-cookie'];
         final authToken = _parseAuthToken(setCookie);
@@ -120,6 +119,7 @@ class _DashboardPageState extends State<DashboardPage> {
           setState(() {
             isLoggedIn = true;
             loggedInUser = username;
+            _authToken = authToken;
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -144,17 +144,19 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  /// Logs out the user by clearing the stored token.
+  /// Logs out by clearing the stored token.
   Future<void> _logout() async {
     await _storage.delete(key: 'auth_token');
     setState(() {
       isLoggedIn = false;
       loggedInUser = "";
+      _authToken = null;
     });
   }
 
   /// Returns an appropriate AppBar.
   PreferredSizeWidget _buildAppBar() {
+    // When logged in, use your existing SharedAppBar (with navigation links)
     if (isLoggedIn) {
       return const SharedAppBar(title: 'Dashboard');
     }
@@ -168,72 +170,59 @@ class _DashboardPageState extends State<DashboardPage> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Center(
-        child: isLoggedIn
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Welcome, $loggedInUser',
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(height: 16),
-                  // Dashboard content goes here
-                  const Text('This is your dashboard content.'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _logout,
-                    child: const Text('Log Out'),
-                  ),
-                ],
-              )
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextField(
-                        controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Username',
-                          border: OutlineInputBorder(),
-                        ),
+      body: isLoggedIn
+          ? BlocProvider(
+              create: (_) =>
+                  DashboardCubit(authToken: _authToken!)..fetchDashboardData(),
+              child: DashboardContent(
+                loggedInUser: loggedInUser,
+                logoutCallback: _logout,
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(),
-                        ),
-                        obscureText: true,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        border: OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _attemptLogin,
-                        child: const Text('Log In'),
-                      ),
-                      const SizedBox(height: 16),
-                      // Navigation link to the Sign-Up page
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const SignUpPage()),
-                          );
-                        },
-                        child: const Text("Don't have an account? Sign Up"),
-                      ),
-                    ],
-                  ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _attemptLogin,
+                      child: const Text('Log In'),
+                    ),
+                    const SizedBox(height: 16),
+                    // Link to the sign-up page
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SignUpPage()),
+                        );
+                      },
+                      child: const Text("Don't have an account? Sign Up"),
+                    ),
+                  ],
                 ),
               ),
-      ),
+            ),
     );
   }
 }
