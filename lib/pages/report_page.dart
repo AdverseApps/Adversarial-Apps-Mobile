@@ -65,7 +65,7 @@ class ReportPage extends StatelessWidget {
                       ),
                       padding: const EdgeInsets.all(16),
                       child: QrImageView(
-                        data: cik,
+                        data: 'https://adversarialapps.com/company/$cik',
                         version: QrVersions.auto,
                         size: 200.0,
                       ),
