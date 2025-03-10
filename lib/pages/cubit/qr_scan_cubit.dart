@@ -1,12 +1,12 @@
-import 'package:adversarialapps/pages/cubit/report_cubit.dart';
-import 'package:adversarialapps/pages/report_page.dart';
-import 'package:adversarialapps/services/cik_service.dart';
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
 import 'qr_scan_state.dart';
+import 'package:adversarialapps/pages/cubit/report_cubit.dart';
+import 'package:adversarialapps/pages/report_page.dart';
+import 'package:adversarialapps/services/cik_service.dart';
+import 'package:provider/provider.dart';
+import 'package:adversarialapps/components/auth_provider.dart';
 
 class QrScanCubit extends Cubit<QrScanState> {
   QrScanCubit() : super(QrScanState.initial());
@@ -24,13 +24,17 @@ class QrScanCubit extends Cubit<QrScanState> {
       }
       emit(state.copyWith(scannedText: cik));
 
-      // Navigate to the ReportPage using the extracted CIK
+      // Get the username from AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final username = authProvider.username;
+
+      // Navigate to the ReportPage using the extracted CIK and username
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => BlocProvider(
             create: (_) => ReportCubit(CikService())..fetchCompanyDetails(cik),
-            child: ReportPage(cik: cik),
+            child: ReportPage(cik: cik, username: username),
           ),
         ),
       );

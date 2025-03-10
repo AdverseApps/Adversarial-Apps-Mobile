@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:http/http.dart' as http;
 import 'package:adversarialapps/services/cik_service.dart';
 
 class ReportState extends Equatable {
@@ -31,6 +33,8 @@ class ReportState extends Equatable {
 
 class ReportCubit extends Cubit<ReportState> {
   final CikService _cikService;
+  // Define your API endpoint for calling the Next.js Python API
+  final String apiEndpoint = 'https://adversarialapps.com/api/call-python-api';
 
   ReportCubit(this._cikService) : super(const ReportState());
 
@@ -45,6 +49,37 @@ class ReportCubit extends Cubit<ReportState> {
         isLoading: false,
         error: e.toString(),
       ));
+    }
+  }
+
+  Future<void> toggleFavorite(String username, String cik) async {
+    // Create the POST body for your favorite toggle
+    final body = jsonEncode({
+      'action': 'add_remove_favorite',
+      'username': username,
+      'cik': cik,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiEndpoint),
+        body: body,
+        headers: {
+          'Content-Type': 'application/json',
+          // Include any additional headers if necessary
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // Optionally, handle response data (e.g. update state or show a message)
+        print('Toggle favorite successful: ${data['message']}');
+      } else {
+        // Optionally update the state with the error message
+        emit(state.copyWith(error: 'Error toggling favorite'));
+      }
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
     }
   }
 }

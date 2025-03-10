@@ -5,6 +5,8 @@ import '../components/shared_app_bar.dart';
 import 'cubit/search_cubit.dart';
 import 'cubit/report_cubit.dart';
 import 'report_page.dart';
+import 'package:provider/provider.dart';
+import 'package:adversarialapps/components/auth_provider.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -19,6 +21,9 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final searchCubit = context.read<SearchCubit>();
+    // Get the current username from AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final username = authProvider.username;
 
     return Scaffold(
       appBar: const SharedAppBar(title: 'Search CIK'),
@@ -68,7 +73,11 @@ class _SearchPageState extends State<SearchPage> {
                                 builder: (context) => BlocProvider(
                                   create: (_) => ReportCubit(CikService())
                                     ..fetchCompanyDetails(company.cik),
-                                  child: ReportPage(cik: company.cik),
+                                  // Pass both cik and username
+                                  child: ReportPage(
+                                    cik: company.cik,
+                                    username: username,
+                                  ),
                                 ),
                               ),
                             );
