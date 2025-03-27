@@ -41,10 +41,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// Verifies whether a token exists and is valid.
   Future<void> _checkLoginStatus() async {
-    setState(() {
-      isLoading = true;
-    });
-    String? token = await _storage.read(key: 'auth_token');
+    setState(() => isLoading = true);
+    String? token;
+    try {
+      token = await _storage.read(key: 'auth_token');
+    } catch (e) {
+      // Error reading token: remove the invalid token.
+      await _storage.delete(key: 'auth_token');
+      token = null;
+    }
+
     if (token != null) {
       try {
         final response = await http.get(
@@ -75,9 +81,7 @@ class _DashboardPageState extends State<DashboardPage> {
         setState(() => isLoggedIn = false);
       }
     }
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   /// Extracts the auth token from a Set-Cookie header.
