@@ -13,10 +13,11 @@ class QrScanCubit extends Cubit<QrScanState> {
 
   /// Called whenever a barcode/QR code is detected by the scanner.
   void onDetect(Barcode barcode, BuildContext context) {
+    // Prevent handling if already processed a scan
+    if (state.scannedText.isNotEmpty) return;
+
     final String code = barcode.rawValue ?? '';
     if (code.isNotEmpty) {
-      // The QR code now returns a URL like:
-      // "https://adversarialapps.com/company/<cik>"
       const prefix = "https://adversarialapps.com/company/";
       String cik = code;
       if (code.startsWith(prefix)) {
@@ -37,7 +38,10 @@ class QrScanCubit extends Cubit<QrScanState> {
             child: ReportPage(cik: cik, username: username),
           ),
         ),
-      );
+      ).then((_) {
+        // When the report page is popped, clear the scanned text
+        clearScannedText();
+      });
     }
   }
 
