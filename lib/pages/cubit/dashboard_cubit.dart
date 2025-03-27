@@ -121,7 +121,10 @@ class DashboardCubit extends Cubit<DashboardState> {
                 : -1;
 
         favorites.add(FavoriteCompany(
-            cik: cik, companyData: companyData, riskScore: riskScore));
+          cik: cik,
+          companyData: companyData,
+          riskScore: riskScore,
+        ));
       }
       emit(state.copyWith(
         status: DashboardStatus.loaded,
@@ -199,16 +202,11 @@ class DashboardContent extends StatelessWidget {
                   child: Column(
                     children: [
                       // Header row
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
                           Expanded(
                               child: Text('',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                          Expanded(
-                              child: Text('Company',
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold))),
@@ -247,10 +245,7 @@ class DashboardContent extends StatelessWidget {
                                         fav.companyData!['name'] != null)
                                     ? fav.companyData!['name']
                                     : fav.cik;
-                                final isVerified = (fav.companyData != null &&
-                                        fav.companyData!['verified'] == true)
-                                    ? "Yes"
-                                    : "No";
+                                final isVerified = (fav.riskScore >= 0);
                                 return ExpansionTile(
                                   title: Text(companyName,
                                       style:
@@ -260,16 +255,13 @@ class DashboardContent extends StatelessWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Expanded(
+                                        const Expanded(
                                             child: Text('',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     color: Colors.white))),
                                         Expanded(
-                                            child: Text(companyName,
-                                                style: const TextStyle(
-                                                    color: Colors.white))),
-                                        Expanded(
-                                            child: Text(isVerified,
+                                            child: Text(
+                                                isVerified ? "Yes" : "No",
                                                 style: const TextStyle(
                                                     color: Colors.white))),
                                         Expanded(
