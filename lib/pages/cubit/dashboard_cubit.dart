@@ -145,10 +145,10 @@ class DashboardContent extends StatelessWidget {
   final VoidCallback logoutCallback;
 
   const DashboardContent({
-    Key? key,
+    super.key,
     required this.loggedInUser,
     required this.logoutCallback,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

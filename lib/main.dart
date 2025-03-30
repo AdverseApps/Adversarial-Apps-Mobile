@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
       home: const DashboardPage(),
       routes: {
         '/dashboard': (context) => const DashboardPage(),
-        '/search': (context) => SearchPage(),
+        '/search': (context) => const SearchPage(),
         '/qrScan': (context) => const QrScanPage(),
         '/qrGenerate': (context) => const QrGeneratePage(),
       },
