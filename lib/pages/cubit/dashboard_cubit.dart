@@ -38,7 +38,7 @@ class DashboardState {
 class FavoriteCompany {
   final String cik;
   final Map<String, dynamic>? companyData;
-  final int riskScore;
+  final double riskScore;
 
   FavoriteCompany({
     required this.cik,
@@ -115,10 +115,10 @@ class DashboardCubit extends Cubit<DashboardState> {
           body: jsonEncode({"action": "get_company_score", "cik": cik}),
         );
         final riskJson = jsonDecode(riskResponse.body);
-        int riskScore =
+        double riskScore =
             (riskJson['status'] == 'success' && riskJson['riskScore'] != null)
-                ? riskJson['riskScore']
-                : -1;
+                ? (riskJson['riskScore'] as num).toDouble()
+                : -1.0;
 
         favorites.add(FavoriteCompany(
           cik: cik,

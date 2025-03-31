@@ -36,6 +36,12 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (isLoggedIn) {
+      Provider.of<AuthProvider>(context, listen: false)
+          .setLoggedIn(true, username: loggedInUser);
+    }
+  });
     _checkLoginStatus();
   }
 
@@ -165,8 +171,6 @@ class _DashboardPageState extends State<DashboardPage> {
   PreferredSizeWidget _buildAppBar() {
     // When logged in, use your existing SharedAppBar (with navigation links)
     if (isLoggedIn) {
-      Provider.of<AuthProvider>(context, listen: false)
-          .setLoggedIn(true, username: loggedInUser);
       return const SharedAppBar(title: 'Dashboard');
     }
     return AppBar(title: const Text('Login'));
