@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../components/shared_app_bar.dart';
 import 'signup_page.dart';
+import 'dashboard_content.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});

@@ -1,9 +1,23 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 // --- Models & State ---
+
+// Update the model to include the source and allow dynamic risk score
+class FavoriteCompany {
+  final String identifier; // SEC: CIK, SAM: UEI
+  final String source; // "SEC" or "SAM"
+  final Map<String, dynamic>? companyData;
+  final dynamic riskScore; // For SEC: number; for SAM: string ("SAM Compliant", "Expired", "N/A")
+
+  FavoriteCompany({
+    required this.identifier,
+    required this.source,
+    this.companyData,
+    required this.riskScore,
+  });
+}
 
 enum DashboardStatus { initial, loading, loaded, error }
 
@@ -35,33 +49,26 @@ class DashboardState {
   }
 }
 
-class FavoriteCompany {
-  final String cik;
-  final Map<String, dynamic>? companyData;
-  final double riskScore;
-
-  FavoriteCompany({
-    required this.cik,
-    this.companyData,
-    required this.riskScore,
-  });
-}
-
-// --- Cubit Implementation ---
-
 class DashboardCubit extends Cubit<DashboardState> {
   final String authToken;
   DashboardCubit({required this.authToken}) : super(DashboardState());
 
-  // Endpoints – adjust these as necessary
+  // Endpoints – adjust these as necessary.
   final String verifyUrl = 'https://adversarialapps.com/api/verify-login';
-  final String callPythonUrl =
-      'https://adversarialapps.com/api/call-python-api';
+  final String callPythonUrl = 'https://adversarialapps.com/api/call-python-api';
+
+  /// A helper to parse an 8-character date string (YYYYMMDD) into a DateTime.
+  DateTime parseDate(String dateString) {
+    if (dateString.length != 8) return DateTime(0);
+    final formattedDate =
+        '${dateString.substring(0, 4)}-${dateString.substring(4, 6)}-${dateString.substring(6, 8)}';
+    return DateTime.tryParse(formattedDate) ?? DateTime(0);
+  }
 
   Future<void> fetchDashboardData() async {
     emit(state.copyWith(status: DashboardStatus.loading));
     try {
-      // Verify token and get user status
+      // Verify token and get user status.
       final verifyResponse = await http.get(
         Uri.parse(verifyUrl),
         headers: {
@@ -76,56 +83,96 @@ class DashboardCubit extends Cubit<DashboardState> {
       if (verifyData['success'] != true || verifyData['user'] == null) {
         throw Exception('Invalid token');
       }
-      // Build userStatus map – including role
+      // Build the userStatus map, including role.
       final userStatus = {
         "username": verifyData['user'],
         "role": verifyData['role'] ?? "false"
       };
 
-      // Get favorites by calling the Python API
+      // Get favorites by calling the Python API.
       final favoritesResponse = await http.post(
         Uri.parse(callPythonUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(
-            {"action": "get_favorites", "username": userStatus["username"]}),
+        body: jsonEncode({"action": "get_favorites", "username": userStatus["username"]}),
       );
       final favoritesJson = jsonDecode(favoritesResponse.body);
       if (favoritesJson['status'] != 'success' ||
-          favoritesJson['sec_favorites'] == null) {
+          favoritesJson['sec_favorites'] == null ||
+          favoritesJson['sam_favorites'] == null) {
         throw Exception('Failed to load favorites');
       }
-      final List<dynamic> favoritesList = favoritesJson['sec_favorites'];
+      final List<dynamic> secFavoritesList = favoritesJson['sec_favorites'];
+      final List<dynamic> samFavoritesList = favoritesJson['sam_favorites'];
       List<FavoriteCompany> favorites = [];
 
-      // For each favorite (CIK), fetch SEC data and risk score
-      for (var cik in favoritesList) {
-        // Fetch SEC data
+      // Process SEC favorites.
+      for (var identifier in secFavoritesList) {
+        // Fetch SEC data.
         final secResponse = await http.post(
           Uri.parse(callPythonUrl),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({"action": "get_sec_data", "search_term": cik}),
+          body: jsonEncode({"action": "get_sec_data", "search_term": identifier}),
         );
         final secJson = jsonDecode(secResponse.body);
         Map<String, dynamic>? companyData = secJson['company'];
 
-        // Fetch risk score
+        // Fetch risk score for SEC.
         final riskResponse = await http.post(
           Uri.parse(callPythonUrl),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({"action": "get_company_score", "identifier": cik, "source": "SEC"}),
+          body: jsonEncode({
+            "action": "get_company_score",
+            "identifier": identifier,
+            "source": "SEC"
+          }),
         );
         final riskJson = jsonDecode(riskResponse.body);
-        double riskScore =
-            (riskJson['status'] == 'success' && riskJson['riskScore'] != null)
-                ? (riskJson['riskScore'] as num).toDouble()
-                : -1.0;
+        dynamic riskScore = (riskJson['status'] == 'success' && riskJson['riskScore'] != null)
+            ? (riskJson['riskScore'] as num).toDouble()
+            : -1.0;
 
-        favorites.add(FavoriteCompany(
-          cik: cik,
-          companyData: companyData,
-          riskScore: riskScore,
-        ));
+        favorites.add(
+          FavoriteCompany(
+            identifier: identifier,
+            source: "SEC",
+            companyData: companyData,
+            riskScore: riskScore,
+          ),
+        );
       }
+
+      // Process SAM favorites.
+      for (var identifier in samFavoritesList) {
+        // Fetch SAM data (using same API endpoint with action "fetch_sam_data").
+        final samResponse = await http.post(
+          Uri.parse(callPythonUrl),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({"action": "fetch_sam_data", "uei": identifier}),
+        );
+        final samJson = jsonDecode(samResponse.body);
+        Map<String, dynamic>? companyData = samJson['company'];
+
+        // Compute riskScore for SAM companies using expiration_date.
+        dynamic riskScore;
+        if (companyData != null && companyData['expiration_date'] != null) {
+          final expirationDate = parseDate(companyData['expiration_date']);
+          final isCompliant = expirationDate.isAfter(DateTime.now());
+          riskScore = isCompliant ? "SAM Compliant" : "Expired";
+        } else {
+          riskScore = "N/A";
+        }
+
+        favorites.add(
+          FavoriteCompany(
+            identifier: identifier,
+            source: "SAM",
+            companyData: companyData,
+            riskScore: riskScore,
+          ),
+        );
+      }
+
+      // Optionally, you could sort favorites (for example, alphabetically by company name or by source).
       emit(state.copyWith(
         status: DashboardStatus.loaded,
         userStatus: userStatus,
@@ -135,182 +182,5 @@ class DashboardCubit extends Cubit<DashboardState> {
       emit(state.copyWith(
           status: DashboardStatus.error, errorMessage: e.toString()));
     }
-  }
-}
-
-// --- UI for Dashboard Content ---
-
-class DashboardContent extends StatelessWidget {
-  final String loggedInUser;
-  final VoidCallback logoutCallback;
-
-  const DashboardContent({
-    super.key,
-    required this.loggedInUser,
-    required this.logoutCallback,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<DashboardCubit, DashboardState>(
-      builder: (context, state) {
-        if (state.status == DashboardStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state.status == DashboardStatus.error) {
-          return Center(child: Text('Error: ${state.errorMessage}'));
-        } else if (state.status == DashboardStatus.loaded) {
-          final userStatus = state.userStatus;
-          final favorites = state.favorites;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome message
-                Text(
-                  'Welcome, $loggedInUser!',
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                // Reviewer features, if the user's role is "true"
-                if (userStatus != null && userStatus["role"] == "true")
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Reviewer Features',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Implement special reviewer action here
-                        },
-                        child: const Text('Special Reviewer Action'),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                // Favorites table section
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade700,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      // Header row
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                              child: Text('',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                          Expanded(
-                              child: Text('Verified',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                          Expanded(
-                              child: Text('Rating',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                          Expanded(
-                              child: Text('Remove',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                          Expanded(
-                              child: Text('QR Code',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold))),
-                        ],
-                      ),
-                      const Divider(color: Colors.white),
-                      // Favorites list
-                      favorites.isNotEmpty
-                          ? ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: favorites.length,
-                              itemBuilder: (context, index) {
-                                final fav = favorites[index];
-                                final companyName = (fav.companyData != null &&
-                                        fav.companyData!['name'] != null)
-                                    ? fav.companyData!['name']
-                                    : fav.cik;
-                                final isVerified = (fav.riskScore >= 0);
-                                return ExpansionTile(
-                                  title: Text(companyName,
-                                      style:
-                                          const TextStyle(color: Colors.white)),
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Expanded(
-                                            child: Text('',
-                                                style: TextStyle(
-                                                    color: Colors.white))),
-                                        Expanded(
-                                            child: Text(
-                                                isVerified ? "Yes" : "No",
-                                                style: const TextStyle(
-                                                    color: Colors.white))),
-                                        Expanded(
-                                            child: Text(
-                                                fav.riskScore.toString(),
-                                                style: const TextStyle(
-                                                    color: Colors.white))),
-                                        Expanded(
-                                          child: IconButton(
-                                            icon: const Icon(Icons.delete,
-                                                color: Colors.white),
-                                            onPressed: () {
-                                              // Implement removal of favorite here
-                                            },
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: IconButton(
-                                            icon: const Icon(Icons.qr_code,
-                                                color: Colors.white),
-                                            onPressed: () {
-                                              // Implement QR code display here
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                );
-                              },
-                            )
-                          : const Text('No favorite companies.',
-                              style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: logoutCallback,
-                    child: const Text('Log Out'),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return const SizedBox();
-      },
-    );
   }
 }
