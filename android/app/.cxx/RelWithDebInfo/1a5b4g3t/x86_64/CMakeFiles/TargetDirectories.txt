@@ -1,0 +1,2 @@
+C:/Users/maste/Documents/Repositories/Adversarial-Apps-Mobile/android/app/.cxx/RelWithDebInfo/1a5b4g3t/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/maste/Documents/Repositories/Adversarial-Apps-Mobile/android/app/.cxx/RelWithDebInfo/1a5b4g3t/x86_64/CMakeFiles/rebuild_cache.dir

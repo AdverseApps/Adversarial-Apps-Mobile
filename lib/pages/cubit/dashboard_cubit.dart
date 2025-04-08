@@ -91,10 +91,10 @@ class DashboardCubit extends Cubit<DashboardState> {
       );
       final favoritesJson = jsonDecode(favoritesResponse.body);
       if (favoritesJson['status'] != 'success' ||
-          favoritesJson['favorites'] == null) {
+          favoritesJson['sec_favorites'] == null) {
         throw Exception('Failed to load favorites');
       }
-      final List<dynamic> favoritesList = favoritesJson['favorites'];
+      final List<dynamic> favoritesList = favoritesJson['sec_favorites'];
       List<FavoriteCompany> favorites = [];
 
       // For each favorite (CIK), fetch SEC data and risk score
@@ -112,7 +112,7 @@ class DashboardCubit extends Cubit<DashboardState> {
         final riskResponse = await http.post(
           Uri.parse(callPythonUrl),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({"action": "get_company_score", "cik": cik}),
+          body: jsonEncode({"action": "get_company_score", "identifier": cik, "source": "SEC"}),
         );
         final riskJson = jsonDecode(riskResponse.body);
         double riskScore =

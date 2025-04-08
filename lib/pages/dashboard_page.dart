@@ -133,6 +133,8 @@ class _DashboardPageState extends State<DashboardPage> {
             loggedInUser = username;
             _authToken = authToken;
           });
+          Provider.of<AuthProvider>(context, listen: false)
+      .setLoggedIn(true, username: username);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login failed: No token received.')),

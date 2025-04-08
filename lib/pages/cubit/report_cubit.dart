@@ -57,7 +57,7 @@ class ReportCubit extends Cubit<ReportState> {
     final body = jsonEncode({
       'action': 'add_remove_favorite',
       'username': username,
-      'cik': cik,
+      "identifier": cik, "source": "SEC",
     });
 
     try {
